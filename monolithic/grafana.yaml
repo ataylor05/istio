@@ -37,7 +37,7 @@ spec:
   servers:
   - port:
       number: 443
-      name: https
+      name: https-grafana
       protocol: HTTPS
     hosts:
     - grafana.teokyllc.internal
@@ -48,7 +48,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: grafana
+  name: grafana-vs
   namespace: monitoring
 spec:
   hosts:
@@ -59,3 +59,5 @@ spec:
   - route:
     - destination:
         host: grafana
+        port:
+          number: 3000
