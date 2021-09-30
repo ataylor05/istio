@@ -1,0 +1,61 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-tls
+  namespace: istio-system
+spec:
+  secretName: grafana-tls
+  duration: 2160h
+  renewBefore: 360h
+  subject:
+    organizations:
+      - teokyllc
+  commonName: grafana.teokyllc.internal
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - grafana.teokyllc.internal
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: grafana-gateway
+  namespace: monitoring
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - grafana.teokyllc.internal
+    tls:
+      mode: SIMPLE
+      credentialName: grafana-tls
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  hosts:
+  - grafana.teokyllc.internal
+  gateways:
+  - grafana-gateway
+  http:
+  - route:
+    - destination:
+        host: grafana
